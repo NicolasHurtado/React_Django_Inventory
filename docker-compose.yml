@@ -49,7 +49,27 @@ services:
     networks:
       - app-network
 
-  # Nginx to serve static  files and proxy to backend
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: always
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "5173:5173"
+    command: npm run dev -- --host 0.0.0.0
+    networks:
+      - app-network
+
+  # Nginx to serve static files and proxy to backend
   nginx:
     build:
       context: ./backend/config/nginx
@@ -62,6 +82,7 @@ services:
       - static_volume:/home/app/staticfiles
     depends_on:
       - backend
+      - frontend
     networks:
       - app-network
 
