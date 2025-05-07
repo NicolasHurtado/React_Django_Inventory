@@ -26,10 +26,8 @@ RUN pip install --no-cache-dir "poetry==$POETRY_VERSION"
 # Copy only the necessary files to install dependencies
 COPY pyproject.toml poetry.lock ./
 
-
 # Generate the lock file and install dependencies
 RUN poetry install --no-interaction --no-ansi --no-root
-
 
 COPY . .
 RUN chmod +x wait_for_db.py create_superuser.py
