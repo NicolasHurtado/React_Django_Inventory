@@ -25,8 +25,8 @@ from rest_framework.routers import DefaultRouter
 from apps.companies.views import CompanyViewSet
 from apps.products.views import ProductViewSet
 from apps.inventories.views import InventoryViewSet
-from apps.users.views import UserViewSet
-from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
+from apps.users.views import UserViewSet, MyTokenObtainPairView
+from rest_framework_simplejwt.views import TokenRefreshView
 
 router = DefaultRouter()
 router.register(r"companies", CompanyViewSet, basename="company")
@@ -36,7 +36,7 @@ router.register(r"users", UserViewSet, basename="user")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/", MyTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path(
         "api/",

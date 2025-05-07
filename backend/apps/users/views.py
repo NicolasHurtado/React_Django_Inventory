@@ -5,6 +5,8 @@ from rest_framework import viewsets
 from apps.users.models import User
 from apps.users.serializers import UserSerializer
 from core.permissions import IsAdminUser, IsOwnerOrAdmin
+from rest_framework_simplejwt.views import TokenObtainPairView
+from apps.users.serializers import CustomTokenObtainPairSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -30,3 +32,6 @@ class UserViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = [IsOwnerOrAdmin]
         return [permission() for permission in permission_classes]
+    
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer

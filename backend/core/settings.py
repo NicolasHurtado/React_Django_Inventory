@@ -51,9 +51,11 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "drf_spectacular",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -233,3 +235,10 @@ LOGGING = {
         },
     },
 }
+
+# Configuración de CORS para desarrollo
+CORS_ALLOW_ALL_ORIGINS = True
+# Para producción, usar:
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:5173",
+# ]

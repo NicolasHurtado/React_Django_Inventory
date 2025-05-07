@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import User, RoleChoices
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -16,3 +17,14 @@ class UserSerializer(serializers.ModelSerializer):
             role=validated_data.get("role", RoleChoices.EXTERNAL),
         )
         return user
+
+class UserTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "role"]
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data["user"] =  UserTokenSerializer(self.user).data
+        return data
