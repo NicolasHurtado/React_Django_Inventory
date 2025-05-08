@@ -2,24 +2,31 @@ import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
+// Interfaz que refleja los datos crudos que llegan del backend
 export interface InventoryItem {
   id: number;
-  product: number;
-  product_name: string;
-  product_code: string;
-  company: number;
-  company_name: string;
   quantity: number;
-  last_updated: string;
+  created_at: string;
+  company: number;
+  product: number;
+  // Estos campos podrían existir en respuestas enriquecidas
+  product_name?: string;
+  product_code?: string;
+  company_name?: string;
 }
 
+// Interfaz para los datos procesados que usa el frontend
 export interface InventoryItemSummary {
   id: number;
-  productCode: string;
-  productName: string;
   quantity: number;
-  companyName: string;
-  lastUpdated: string;
+  product: number;
+  company: number;
+  created_at: string;
+  // Campos calculados para la UI
+  productCode?: string;
+  productName?: string;
+  companyName?: string;
+  lastUpdated?: string;
 }
 
 export interface CreateInventoryItemDto {
@@ -32,87 +39,75 @@ export interface UpdateInventoryItemDto {
   quantity?: number;
 }
 
-const getAll = async (): Promise<InventoryItemSummary[]> => {
+/**
+ * Obtiene todos los elementos del inventario
+ */
+const getAll = async (): Promise<InventoryItem[]> => {
   try {
     const response = await axios.get<InventoryItem[]>(`${API_URL}/inventories/`);
-    // Transformar la respuesta al formato que espera la UI
-    return response.data.map(item => ({
-      id: item.id,
-      productCode: item.product_code,
-      productName: item.product_name,
-      quantity: item.quantity,
-      companyName: item.company_name,
-      lastUpdated: item.last_updated
-    }));
+    return response.data;
   } catch (error) {
     throw error;
   }
 };
 
-const getByCompany = async (companyId: number): Promise<InventoryItemSummary[]> => {
+/**
+ * Obtiene los elementos de inventario filtrados por empresa
+ * @param companyId ID de la empresa a filtrar
+ */
+const getByCompany = async (companyId: number): Promise<InventoryItem[]> => {
   try {
     const response = await axios.get<InventoryItem[]>(`${API_URL}/inventories/?company=${companyId}`);
-    return response.data.map(item => ({
-      id: item.id,
-      productCode: item.product_code,
-      productName: item.product_name,
-      quantity: item.quantity,
-      companyName: item.company_name,
-      lastUpdated: item.last_updated
-    }));
+    return response.data;
   } catch (error) {
     throw error;
   }
 };
 
-const getById = async (id: number): Promise<InventoryItemSummary> => {
+/**
+ * Obtiene un elemento de inventario por su ID
+ * @param id ID del elemento a obtener
+ */
+const getById = async (id: number): Promise<InventoryItem> => {
   try {
     const response = await axios.get<InventoryItem>(`${API_URL}/inventories/${id}/`);
-    return {
-      id: response.data.id,
-      productCode: response.data.product_code,
-      productName: response.data.product_name,
-      quantity: response.data.quantity,
-      companyName: response.data.company_name,
-      lastUpdated: response.data.last_updated
-    };
+    return response.data;
   } catch (error) {
     throw error;
   }
 };
 
-const create = async (inventoryData: CreateInventoryItemDto): Promise<InventoryItemSummary> => {
+/**
+ * Crea un nuevo elemento de inventario
+ * @param inventoryData Datos del nuevo elemento
+ */
+const create = async (inventoryData: CreateInventoryItemDto): Promise<InventoryItem> => {
   try {
     const response = await axios.post<InventoryItem>(`${API_URL}/inventories/`, inventoryData);
-    return {
-      id: response.data.id,
-      productCode: response.data.product_code,
-      productName: response.data.product_name,
-      quantity: response.data.quantity,
-      companyName: response.data.company_name,
-      lastUpdated: response.data.last_updated
-    };
+    return response.data;
   } catch (error) {
     throw error;
   }
 };
 
-const update = async (id: number, inventoryData: UpdateInventoryItemDto): Promise<InventoryItemSummary> => {
+/**
+ * Actualiza un elemento de inventario existente
+ * @param id ID del elemento a actualizar
+ * @param inventoryData Datos a actualizar
+ */
+const update = async (id: number, inventoryData: UpdateInventoryItemDto): Promise<InventoryItem> => {
   try {
     const response = await axios.patch<InventoryItem>(`${API_URL}/inventories/${id}/`, inventoryData);
-    return {
-      id: response.data.id,
-      productCode: response.data.product_code,
-      productName: response.data.product_name,
-      quantity: response.data.quantity,
-      companyName: response.data.company_name,
-      lastUpdated: response.data.last_updated
-    };
+    return response.data;
   } catch (error) {
     throw error;
   }
 };
 
+/**
+ * Elimina un elemento de inventario
+ * @param id ID del elemento a eliminar
+ */
 const remove = async (id: number): Promise<void> => {
   try {
     await axios.delete(`${API_URL}/inventories/${id}/`);
@@ -121,12 +116,15 @@ const remove = async (id: number): Promise<void> => {
   }
 };
 
-// Generar y descargar el PDF del inventario
+/**
+ * Genera y descarga el PDF del inventario
+ * @param companyId ID de la empresa (opcional)
+ */
 const generatePDF = async (companyId?: number): Promise<Blob> => {
   try {
     const url = companyId 
-      ? `${API_URL}/inventories/pdf/?company=${companyId}` 
-      : `${API_URL}/inventories/pdf/`;
+      ? `${API_URL}/inventories/download_pdf/` 
+      : `${API_URL}/inventories/download_pdf/`;
     
     const response = await axios.get(url, {
       responseType: 'blob'
@@ -138,13 +136,17 @@ const generatePDF = async (companyId?: number): Promise<Blob> => {
   }
 };
 
-// Enviar el PDF por correo electrónico
+/**
+ * Envía el PDF del inventario por correo electrónico
+ * @param email Correo electrónico del destinatario
+ * @param companyId ID de la empresa (opcional)
+ */
 const sendPDFByEmail = async (email: string, companyId?: number): Promise<void> => {
   try {
-    const url = `${API_URL}/inventories/send_pdf/`;
+    const url = `${API_URL}/inventories/send_email/`;
     await axios.post(url, {
       email,
-      company: companyId
+      company_id: companyId
     });
   } catch (error) {
     throw error;
