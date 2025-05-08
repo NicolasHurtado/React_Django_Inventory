@@ -9,7 +9,7 @@ from rest_framework.decorators import action
 from django.http import FileResponse
 from apps.inventories.utils import generate_inventory_pdf, generate_inventory_pdf_for_email, send_inventory_email
 from core.permissions import IsAdminOrReadOnly
-from apps.companies.models import Company
+from django.db.models import QuerySet
 import os
 import logging
 
@@ -29,7 +29,7 @@ class InventoryViewSet(viewsets.ModelViewSet):
     serializer_class = InventorySerializer
     permission_classes = [IsAdminOrReadOnly]
 
-    @action(detail=False, methods=["get"], url_path="download-pdf")
+    @action(detail=False, methods=["get"])
     def download_pdf(self, request):
         """
         Generate and download an inventory PDF report.
@@ -55,32 +55,26 @@ class InventoryViewSet(viewsets.ModelViewSet):
         serializer = EmailInventorySerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        
+        logger.info(f"Received request: {request.data}")
         try:
-            company_id = serializer.validated_data['company_id']
-            email = serializer.validated_data['email']
+            company_id : int | None = request.data.get('company_id')
+            email : str = request.data.get('email')
 
-            # Get the company
-            try:
-                company = Company.objects.get(id=company_id)
-            except Company.DoesNotExist:
-                return Response({
-                    'error': 'The specified company does not exist.'
-                }, status=status.HTTP_404_NOT_FOUND)
+            logger.info(f"Sending email to {email} for company {company_id}")
 
             # Get all inventories of that company
-            inventories = Inventory.objects.filter(company_id=company_id)
+            inventories : QuerySet[Inventory] = Inventory.objects.filter(company_id=company_id) if company_id else Inventory.objects.all()
             
             if not inventories.exists():
                 return Response({
                     'error': 'There are no inventory records for this company.'
                 }, status=status.HTTP_404_NOT_FOUND)
 
-            logger.info(f"Generating PDF for {company.name} with {len(inventories)} inventories")
+            logger.info(f"Generating PDF for all companies with {len(inventories)} inventories")
             # Generate the PDF with all inventories
-            pdf_path = generate_inventory_pdf_for_email(
-                inventory_data=inventories,
-                company_name=company.name
+            pdf_path : str = generate_inventory_pdf_for_email(
+                inventory_data=inventories
             )
             logger.info(f"PDF generated at: {pdf_path}")
 
@@ -88,14 +82,13 @@ class InventoryViewSet(viewsets.ModelViewSet):
             send_inventory_email(
                 email=email,
                 pdf_path=pdf_path,
-                company_name=company.name
             )
 
             # Clean the temporary file
             os.unlink(pdf_path)
 
             return Response({
-                'message': f'The inventory of {company.name} has been sent successfully to {email}.'
+                'message': f'The inventory has been sent successfully to {email}.'
             }, status=status.HTTP_200_OK)
 
         except Exception as e:

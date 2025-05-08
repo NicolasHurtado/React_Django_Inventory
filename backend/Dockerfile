@@ -30,7 +30,7 @@ COPY pyproject.toml poetry.lock ./
 RUN poetry install --no-interaction --no-ansi --no-root
 
 COPY . .
-RUN chmod +x wait_for_db.py create_superuser.py
+RUN chmod +x create_superuser.py
 
 # Expose port
 EXPOSE 8000
