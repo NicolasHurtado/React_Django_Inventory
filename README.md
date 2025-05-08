@@ -9,6 +9,8 @@ This application is a platform for managing companies, products, and inventories
 - **Product Management**: Manage products by company
 - **Inventory Control**: Product stock tracking
 - **Role-based Permissions**: Administrator and external user roles with differentiated permissions
+- **PDF Reports**: Generate and download inventory reports in PDF format
+- **Email Functionality**: Send inventory reports directly via email
 
 ## Project Structure
 
@@ -20,7 +22,10 @@ The project is divided into two main parts:
   - `products`: Product management
   - `inventories`: Inventory control
 
-- **Frontend**: React user interface
+- **Frontend**: React user interface with TypeScript
+  - Modern component architecture
+  - Responsive design with TailwindCSS
+  - Clean, maintainable code structure
 
 ## Requirements
 
@@ -43,6 +48,7 @@ The project is divided into two main parts:
    ```
 
 3. The application will be available at:
+   - Frontend: http://localhost:5173
    - Backend: http://localhost:8000
    - API Docs: http://localhost:8000/api/docs/
    - Admin: http://localhost:8000/admin/
@@ -86,6 +92,8 @@ By default, an administrator user is created with the following credentials:
 - `GET /api/inventories/{id}/`: View inventory details
 - `PUT/PATCH /api/inventories/{id}/`: Update inventory (admin only)
 - `DELETE /api/inventories/{id}/`: Delete inventory (admin only)
+- `GET /api/inventories/download_pdf/`: Generate PDF of all inventories
+- `POST /api/inventories/send_email/`: Send inventory PDF via email
 
 ## Development
 
@@ -105,12 +113,49 @@ backend/
 ├── Dockerfile         # Docker configuration
 ├── pyproject.toml     # Poetry configuration
 └── requirements.txt   # Dependencies
-
-
 ```
+
+### Frontend
+The frontend is built with React, TypeScript, and TailwindCSS, providing a modern and responsive user interface.
+
+#### Folder Structure
+```
+frontend/
+├── public/            # Static files
+├── src/
+│   ├── assets/        # Images, fonts, etc.
+│   ├── components/    # Reusable UI components
+│   │   ├── layout/    # Layout components (Sidebar, Header, etc.)
+│   │   └── ui/        # UI components (Buttons, Inputs, etc.)
+│   ├── pages/         # Application pages
+│   │   ├── auth/      # Authentication pages
+│   │   ├── companies/ # Company management
+│   │   ├── products/  # Product management
+│   │   └── inventories/ # Inventory management
+│   ├── services/      # API service layer
+│   ├── App.tsx        # Main application component
+│   └── main.tsx       # Application entry point
+├── package.json       # NPM dependencies
+├── tsconfig.json      # TypeScript configuration
+├── tailwind.config.js # TailwindCSS configuration
+└── vite.config.ts     # Vite configuration
+```
+
+#### Key Frontend Technologies
+- **React**: For building the UI components
+- **TypeScript**: For type-safe code
+- **TailwindCSS**: For styling
+- **Heroicons**: For icons
+- **Axios**: For API requests
+- **React Router**: For navigation
+- **Formik & Yup**: For form handling and validation
+
 ## Code Quality
 
-This project follows development best practices and has tools to maintain code quality, all configured in `pyproject.toml`:
+This project follows development best practices and has tools to maintain code quality:
+
+### Backend
+All configured in `pyproject.toml`:
 
 ```bash
 # Format code with Black
